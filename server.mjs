@@ -5,13 +5,13 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
-const TIPOS = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json" };
+const TIPOS = { ".png": "image/png", ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json" };
 const PUERTO = process.env.PORT || 8080;
 
 http.createServer(async (req, res) => {
   let p = decodeURIComponent(req.url.split("?")[0]);
   if (p === "/") p = "/index.html";
-  const permitido = p === "/index.html" || p.startsWith("/data/latest.");
+  const permitido = p === "/index.html" || p.startsWith("/data/latest.") || /^\/assets\/[\w.-]+\.png$/.test(p);
   const f = path.join(DIR, p);
   if (!permitido || !f.startsWith(DIR)) { res.writeHead(404); return res.end("No encontrado"); }
   try {

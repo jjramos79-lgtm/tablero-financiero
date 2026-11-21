@@ -9,7 +9,7 @@
     "ambito": {
       "habilitada": true,
       "tipo": "Endpoints JSON publicos (mercados.ambito.com)",
-      "nota": "Dolar oficial, blue, MEP, CCL, mayorista, tarjeta."
+      "nota": "Respaldo del dolar oficial, blue y mayorista si falla DolarApi."
     },
     "data912": {
       "habilitada": true,
@@ -35,6 +35,16 @@
       "habilitada": false,
       "tipo": "Sin API publica (El Cronista Comercial)",
       "nota": "Adaptador reservado."
+    },
+    "dolarapi": {
+      "habilitada": true,
+      "tipo": "API JSON publica (dolarapi.com)",
+      "nota": "Cotizaciones del dolar en Argentina: oficial, blue, MEP, CCL, mayorista, tarjeta, cripto."
+    },
+    "argentinadatos": {
+      "habilitada": true,
+      "tipo": "API JSON publica (argentinadatos.com)",
+      "nota": "Cierre anterior del dolar, para la variacion diaria."
     }
   },
   "frecuencias": {
@@ -100,36 +110,41 @@
   "dolar_ar": [
     {
       "id": "oficial",
-      "nombre": "Dolar Oficial (BNA)",
+      "nombre": "Dolar Oficial",
+      "casa": "oficial",
       "ambito": "oficial"
     },
     {
       "id": "blue",
       "nombre": "Dolar Blue",
+      "casa": "blue",
       "ambito": "informal"
     },
     {
       "id": "mayorista",
       "nombre": "Dolar Mayorista",
+      "casa": "mayorista",
       "ambito": "mayorista"
     },
     {
       "id": "mep",
-      "nombre": "Dolar MEP (implicito AL30/AL30D)",
-      "bono": "AL30",
-      "serie": "D"
+      "nombre": "Dolar MEP (Bolsa)",
+      "casa": "bolsa"
     },
     {
       "id": "ccl",
-      "nombre": "Dolar CCL (implicito AL30/AL30C)",
-      "bono": "AL30",
-      "serie": "C"
+      "nombre": "Dolar CCL",
+      "casa": "contadoconliqui"
     },
     {
       "id": "tarjeta",
-      "nombre": "Dolar Tarjeta (calculado: oficial + recargo)",
-      "desde": "oficial",
-      "recargo_pct": 30
+      "nombre": "Dolar Tarjeta",
+      "casa": "tarjeta"
+    },
+    {
+      "id": "cripto",
+      "nombre": "Dolar Cripto",
+      "casa": "cripto"
     }
   ],
   "bonos": {

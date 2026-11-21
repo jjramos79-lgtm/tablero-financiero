@@ -102,23 +102,30 @@ salida.monedas = (await pool([...cfg.monedas, ...fxExtra], async (m) => {
 const bonosRaw = await safe("Bonos (data912)", data912);
 const bmap = new Map((bonosRaw || []).map((b) => [b.symbol, b]));
 const dolares = [];
-for (const d of cfg.dolar_ar.filter((x) => x.ambito)) {
-  const a = await safe(`Dolar ${d.id} (Ambito)`, () => ambito(d.ambito));
-  dolares.push({ id: d.id, nombre: d.nombre, fuente: "Ambito", ...(a || { error: true }) });
+let dolarapi = null;
+try { dolarapi = await getJSON("https://dolarapi.com/v1/dolares"); } catch (e) { errores.push("DolarApi: " + e.message); }
+const fechaISO = (d) => d.toISOString().slice(0, 10);
+async function cierreAnterior(casa, desdeFecha) {
+  // Busca hacia atras (hasta 6 dias) el ultimo dato anterior a la fecha actual.
+  for (let i = 1; i <= 6; i++) {
+    const d = new Date(desdeFecha); d.setUTCDate(d.getUTCDate() - i);
+    const [y, m, dd] = fechaISO(d).split("-");
+    try { return await getJSON(`https://api.argentinadatos.com/v1/cotizaciones/dolares/${casa}/${y}/${m}/${dd}`, 1); } catch {}
+  }
+  return null;
 }
-for (const d of cfg.dolar_ar.filter((x) => x.bono)) {
-  const ars = bmap.get(d.bono), usd = bmap.get(d.bono + d.serie);
-  if (ars && usd && usd.c) {
-    const v = ars.c / usd.c, p = ars.c / (ars.c / (1 + ars.pct_change / 100)) ;
-    const prev = (ars.c / (1 + ars.pct_change / 100)) / (usd.c / (1 + usd.pct_change / 100));
-    dolares.push({ id: d.id, nombre: d.nombre, fuente: "data912 (calculado)", compra: v, venta: v, previo: prev, variacion: pct(v, prev), fecha: "en vivo" });
-  } else { errores.push(`Dolar ${d.id}: sin datos de ${d.bono}`); dolares.push({ id: d.id, nombre: d.nombre, error: true }); }
-}
-for (const d of cfg.dolar_ar.filter((x) => x.desde)) {
-  const base = dolares.find((x) => x.id === d.desde);
-  const k = 1 + d.recargo_pct / 100;
-  dolares.push(base && !base.error ? { id: d.id, nombre: d.nombre, fuente: "Calculado", compra: base.compra && base.compra * k, venta: base.venta * k, previo: base.previo * k, variacion: base.variacion, fecha: base.fecha } : { id: d.id, nombre: d.nombre, error: true });
-}
+await Promise.all(cfg.dolar_ar.map(async (d) => {
+  const hoy = dolarapi?.find((x) => x.casa === d.casa);
+  let r = null;
+  if (hoy) {
+    const prev = await cierreAnterior(d.casa, hoy.fechaActualizacion);
+    r = { id: d.id, nombre: d.nombre, fuente: "DolarApi.com", compra: hoy.compra, venta: hoy.venta, previo: prev?.venta ?? null, variacion: prev ? pct(hoy.venta, prev.venta) : null, fecha: new Date(hoy.fechaActualizacion).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", hour12: false }) };
+  } else if (d.ambito) {
+    const a = await safe(`Dolar ${d.id} (Ambito)`, () => ambito(d.ambito));
+    if (a) r = { id: d.id, nombre: d.nombre, fuente: "Ambito (respaldo)", ...a };
+  }
+  dolares.push(r || { id: d.id, nombre: d.nombre, error: true });
+}));
 salida.dolar_ar = cfg.dolar_ar.map((d) => dolares.find((x) => x.id === d.id));
 
 salida.commodities = await pool(cfg.commodities, async (c) => {

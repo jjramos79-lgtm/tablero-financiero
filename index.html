@@ -3,142 +3,203 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tablero Financiero</title>
+<title>Tablero Financiero | Desafío PyME</title>
+<link rel="icon" href="assets/logo-1.png">
 <style>
-:root{--bg:#f5f6f8;--card:#fff;--tx:#14181f;--mut:#667085;--bd:#e3e6eb;--up:#0a7d3c;--dn:#c0262d;--ac:#1d4ed8;--sel:#eef2ff}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1319;--card:#171c24;--tx:#e8ebf0;--mut:#8b95a5;--bd:#262d38;--up:#35c27a;--dn:#ff6b6b;--ac:#7aa2ff;--sel:#1e2a4a}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 system-ui,Segoe UI,Roboto,sans-serif}
-header{padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
-h1{font-size:20px;margin:0}.sub{color:var(--mut);font-size:12px}
-.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-label{font-size:12px;color:var(--mut)}select,button{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:5px 8px;font:inherit}
-nav{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 8px}
-nav button{cursor:pointer}nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
-main{padding:0 16px 32px}
-section{display:none}section.on{display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:16px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px}
-.card .n{color:var(--mut);font-size:12px}.card .v{font-size:20px;font-weight:600;margin:2px 0}
-.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
-table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:16px}
-th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap}
-th:first-child,td:first-child{text-align:left}th{font-size:12px;color:var(--mut);font-weight:600;background:var(--card)}
-tr:last-child td{border-bottom:0}.wrap{overflow-x:auto}
-h2{font-size:15px;margin:18px 0 8px}
-.warn{background:var(--sel);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:0 16px 12px;font-size:12px}
-svg.sp{width:90px;height:24px;vertical-align:middle}
-footer{padding:0 16px 24px;color:var(--mut);font-size:12px}
+:root{
+  --navy:#12406b;--blue:#2a6a94;--gray:#707070;--bg:#eef2f7;--card:#fff;--tx:#17212b;--mut:#6b7785;--bd:#dde4ec;
+  --up:#0f9d58;--dn:#d93025;--upbg:#e6f6ee;--dnbg:#fdeceb;
+  --c-res:#12406b;--c-mon:#0e9aa7;--c-bon:#7c4dff;--c-com:#f59e0b;--c-ind:#2563eb;--c-ar:#0ea5e9;--c-ex:#e11d74;--c-fue:#64748b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 "Segoe UI",system-ui,Roboto,sans-serif}
+.top{background:#fff;border-bottom:4px solid transparent;border-image:linear-gradient(90deg,var(--navy),var(--blue),#0e9aa7,#7c4dff,#e11d74) 1;box-shadow:0 2px 12px rgba(18,64,107,.08)}
+.top .in{max-width:1280px;margin:auto;padding:6px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.top img{height:64px;display:block}
+.title h1{margin:0;font-size:22px;color:var(--navy);letter-spacing:-.3px}
+.title div{color:var(--mut);font-size:12px}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);background:var(--bg);padding:5px 10px;border-radius:99px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--up);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(15,157,88,.5)}70%{box-shadow:0 0 0 8px rgba(15,157,88,0)}100%{box-shadow:0 0 0 0 rgba(15,157,88,0)}}
+.btn{border:0;cursor:pointer;font:inherit;font-weight:600;border-radius:8px;padding:7px 12px;background:var(--navy);color:#fff;transition:.15s}
+.btn:hover{background:var(--blue);transform:translateY(-1px)}
+.btn.spin svg{animation:rot .8s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}
+
+.ticker{background:var(--navy);color:#fff;overflow:hidden;white-space:nowrap}
+.ticker .rail{display:inline-block;padding:7px 0;animation:marq 70s linear infinite}
+.ticker:hover .rail{animation-play-state:paused}
+@keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{display:inline-block;margin:0 22px;font-size:13px}.ti b{font-weight:600;opacity:.85;margin-right:6px}
+.ti .u{color:#6be3a2}.ti .d{color:#ff9d96}
+
+nav{max-width:1280px;margin:14px auto 4px;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap}
+nav button{--c:var(--navy);border:2px solid var(--c);color:var(--c);background:#fff;font:inherit;font-weight:600;border-radius:99px;padding:7px 14px;cursor:pointer;transition:.15s}
+nav button:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.12)}
+nav button.on{background:var(--c);color:#fff}
+main{max-width:1280px;margin:auto;padding:6px 16px 28px}
+.bar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--bd);border-radius:12px;padding:8px 12px;margin:10px 0 4px}
+.bar span.l{font-size:12px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.seg{display:inline-flex;background:var(--bg);border-radius:9px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;font:inherit;font-size:12px;font-weight:600;color:var(--mut);border-radius:7px;padding:4px 9px;cursor:pointer;transition:.12s;white-space:nowrap}
+.seg button:hover{color:var(--navy)}
+.seg button.on{background:var(--navy);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+h2{font-size:16px;margin:20px 0 10px;color:var(--navy);display:flex;align-items:center;gap:8px}
+h2::before{content:"";width:5px;height:18px;border-radius:3px;background:var(--h,var(--navy))}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--bd);border-top:4px solid var(--k,var(--navy));border-radius:12px;padding:11px 13px;transition:.15s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(18,64,107,.14)}
+.card .n{color:var(--mut);font-size:12px;font-weight:600}
+.card .v{font-size:23px;font-weight:700;margin:3px 0;letter-spacing:-.4px}
+.card .s{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:12px;color:var(--mut)}
+.card .cv{font-size:12px;color:var(--mut)}
+.chip{display:inline-block;padding:2px 8px;border-radius:99px;font-weight:700;font-size:12px}
+.chip.up{background:var(--upbg);color:var(--up)}.chip.dn{background:var(--dnbg);color:var(--dn)}.chip.na{background:var(--bg);color:var(--mut)}
+.mut{color:var(--mut)}
+.wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--bd);background:var(--card)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#fff;background:var(--h,var(--navy));position:sticky;top:0}
+tbody tr{transition:.1s}tbody tr:hover{background:#f4f8fc}tr:last-child td{border-bottom:0}
+td .tk{font-size:11px;color:var(--mut);margin-left:4px}
+svg.sp{width:90px;height:26px;vertical-align:middle}
+.note{font-size:12px;color:var(--mut);margin-top:8px}
+.warn{background:#fff7e0;border:1px solid #f5d27a;color:#7a5600;border-radius:10px;padding:8px 12px;margin:10px 0;font-size:13px}
+.ok{color:var(--up);font-weight:700}.off{color:var(--mut)}
+footer{max-width:1280px;margin:auto;padding:0 16px 28px;color:var(--mut);font-size:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+footer img{height:34px}
+@media (max-width:600px){.top img{height:48px}.title h1{font-size:18px}.card .v{font-size:20px}}
 </style>
 </head>
 <body>
-<header>
-  <div><h1>Tablero Financiero</h1><div class="sub" id="gen">Cargando…</div></div>
-  <div class="ctl">
-    <label>Tipo de cambio ARS <select id="tc"></select></label>
-    <button id="reload">Actualizar vista</button>
+<div class="top"><div class="in">
+  <img src="assets/logo-2.png" alt="Desafío PyME">
+  <div class="title"><h1>Tablero Financiero</h1><div id="gen">Cargando…</div></div>
+  <div class="tools">
+    <span class="live"><span class="dot"></span><span id="cd">—</span></span>
+    <button class="btn" id="reload"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="vertical-align:-2px"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg> Actualizar</button>
   </div>
-</header>
-<div class="warn" id="warn" hidden></div>
+</div></div>
+<div class="ticker" id="ticker"></div>
 <nav id="nav"></nav>
 <main id="main"></main>
-<footer id="foot"></footer>
+<footer><img src="assets/logo-1.png" alt=""><span>Datos informativos, pueden tener demora. No constituyen asesoramiento financiero.</span></footer>
 <script src="data/latest.js"></script>
 <script>
 const $ = (s) => document.querySelector(s);
 const nf = (d) => new Intl.NumberFormat("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d });
-const fmt = (v, d = 2) => (v == null || isNaN(v) ? "—" : nf(Math.abs(v) >= 1000 ? Math.min(d, 2) : v < 1 && v > -1 ? Math.max(d, 4) : d).format(v));
+const fmt = (v, d = 2) => (v == null || isNaN(v) ? "—" : nf(Math.abs(v) < 1 ? Math.max(d, 4) : d).format(v));
 const fvol = (v) => (v == null ? "—" : v >= 1e9 ? nf(2).format(v / 1e9) + " B" : v >= 1e6 ? nf(2).format(v / 1e6) + " M" : v >= 1e3 ? nf(1).format(v / 1e3) + " K" : nf(0).format(v));
-const cls = (v) => (v == null ? "mut" : v >= 0 ? "up" : "dn");
-const fpct = (v) => (v == null || isNaN(v) ? "—" : `<span class="${cls(v)}">${v >= 0 ? "▲" : "▼"} ${nf(2).format(Math.abs(v))}%</span>`);
+const chip = (v) => v == null || isNaN(v) ? `<span class="chip na">—</span>` : `<span class="chip ${v >= 0 ? "up" : "dn"}">${v >= 0 ? "▲" : "▼"} ${nf(2).format(Math.abs(v))}%</span>`;
 function spark(s) {
   if (!s || s.length < 2) return "";
-  const mn = Math.min(...s), mx = Math.max(...s), r = mx - mn || 1;
-  const pts = s.map((v, i) => `${(i / (s.length - 1)) * 90},${22 - ((v - mn) / r) * 20}`).join(" ");
-  const up = s[s.length - 1] >= s[0];
-  return `<svg class="sp" viewBox="0 0 90 24"><polyline fill="none" stroke="var(--${up ? "up" : "dn"})" stroke-width="1.5" points="${pts}"/></svg>`;
+  const mn = Math.min(...s), mx = Math.max(...s), r = mx - mn || 1, up = s[s.length - 1] >= s[0], col = up ? "#0f9d58" : "#d93025";
+  const pts = s.map((v, i) => `${(i / (s.length - 1)) * 90},${23 - ((v - mn) / r) * 20}`);
+  return `<svg class="sp" viewBox="0 0 90 26"><polygon fill="${col}" fill-opacity=".12" points="0,26 ${pts.join(" ")} 90,26"/><polyline fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round" points="${pts.join(" ")}"/></svg>`;
 }
 const state = { tab: "resumen", tc: "mep", ver: {}, en: {} };
 try { Object.assign(state, JSON.parse(localStorage.getItem("tablero") || "{}")); } catch (e) {}
-const save = () => { try { localStorage.setItem("tablero", JSON.stringify({ tab: state.tab, tc: state.tc, ver: state.ver, en: state.en })); } catch (e) {} };
+const save = () => { try { localStorage.setItem("tablero", JSON.stringify(state)); } catch (e) {} };
 
-const TABS = [["resumen","Resumen"],["monedas","Monedas"],["bonos","Bonos AR"],["commodities","Commodities"],["indices","Índices"],["acc_ar","Acciones argentinas"],["acc_ex","Acciones extranjeras"],["fuentes","Fuentes"]];
+const TABS = [["resumen","🏠 Resumen","--c-res"],["monedas","💱 Monedas","--c-mon"],["bonos","🏛️ Bonos AR","--c-bon"],["commodities","🛢️ Commodities","--c-com"],["indices","📈 Índices","--c-ind"],["acc_ar","🇦🇷 Acciones argentinas","--c-ar"],["acc_ex","🌎 Acciones extranjeras","--c-ex"],["fuentes","🔌 Fuentes","--c-fue"]];
+const color = (t) => `var(${TABS.find((x) => x[0] === t)[2]})`;
 
-function tcARS() { const d = TABLERO.dolar_ar.find((x) => x.id === state.tc); return d && !d.error ? d.venta : null; }
+const tcARS = () => { const d = TABLERO.dolar_ar.find((x) => x.id === state.tc); return d && !d.error ? d.venta : null; };
 function usdPer(cur) { if (cur === "USD") return 1; if (cur === "ARS") { const t = tcARS(); return t ? 1 / t : null; } const m = TABLERO.monedas.find((x) => x.id === cur); return m?.usd_por_unidad ?? null; }
-function convertir(v, de, a) { if (v == null || de === a) return v; const u = usdPer(de), t = usdPer(a); return u && t ? (v * u) / t : null; }
+const convertir = (v, de, a) => { if (v == null || de === a) return v; const u = usdPer(de), t = usdPer(a); return u && t ? (v * u) / t : null; };
+const seg = (items, cur, attr) => `<span class="seg">${items.map(([v, l]) => `<button class="${v === cur ? "on" : ""}" ${attr} data-v="${v}">${l}</button>`).join("")}</span>`;
+const tcBar = () => `<div class="bar"><span class="l">Tipo de cambio para convertir a ARS</span>${seg(TABLERO.dolar_ar.filter((d) => !d.error).map((d) => [d.id, d.nombre.replace("Dolar ", "")]), state.tc, 'data-act="tc"')}</div>`;
 
-const card = (n, v, p, extra = "") => `<div class="card"><div class="n">${n}</div><div class="v">${v}</div><div>${fpct(p)} ${extra}</div></div>`;
+const card = (n, v, p, extra = "", k = "--navy") => `<div class="card" style="--k:var(${k})"><div class="n">${n}</div><div class="v">${v}</div><div class="s">${chip(p)}<span>${extra}</span></div></div>`;
+const dolarCard = (d) => d.error ? card(d.nombre, "—", null) : `<div class="card" style="--k:var(--blue)"><div class="n">${d.nombre}</div><div class="v">$ ${fmt(d.venta)}</div><div class="cv">Compra $ ${fmt(d.compra)} · Venta $ ${fmt(d.venta)}</div><div class="s" style="margin-top:4px">${chip(d.variacion)}<span>${d.fecha || ""}</span></div></div>`;
 
 function vResumen() {
   const D = TABLERO;
-  return `<h2>Dólar en Argentina (ARS por USD)</h2><div class="grid">${D.dolar_ar.map((d) => d.error ? card(d.nombre, "—", null) : card(d.nombre, "$ " + fmt(d.venta), d.variacion, `<span class="mut">${d.fuente}</span>`)).join("")}</div>
-  <h2>Índices</h2><div class="grid">${D.indices.map((i) => i.error ? card(i.nombre, "—", null) : card(i.nombre, fmt(i.precio), i.var_pct, spark(i.serie))).join("")}</div>
-  <h2>Commodities</h2><div class="grid">${D.commodities.map((c) => c.error ? card(c.nombre, "—", null) : card(c.nombre, fmt(c.precio), c.var_pct, `<span class="mut">${c.unidad}</span>`)).join("")}</div>`;
+  return `<h2 style="--h:var(--c-res)">Dólar en Argentina</h2><div class="grid">${D.dolar_ar.map(dolarCard).join("")}</div>
+  <h2 style="--h:var(--c-ind)">Índices</h2><div class="grid">${D.indices.map((i) => i.error ? card(i.nombre, "—", null) : card(i.nombre, fmt(i.precio), i.var_pct, spark(i.serie), "--c-ind")).join("")}</div>
+  <h2 style="--h:var(--c-com)">Commodities</h2><div class="grid">${D.commodities.map((c) => c.error ? card(c.nombre, "—", null) : card(c.nombre, fmt(c.precio), c.var_pct, c.unidad, "--c-com")).join("")}</div>
+  <h2 style="--h:var(--c-mon)">Monedas (USD por unidad)</h2><div class="grid">${D.monedas.filter((m) => !m.oculta && m.id !== "USD" && m.id !== "ARS").map((m) => card(`${m.id} · ${m.nombre}`, m.error ? "—" : fmt(m.usd_por_unidad, 4), m.var_pct, spark(m.serie), "--c-mon")).join("")}</div>`;
 }
 function vMonedas() {
-  const D = TABLERO, t = tcARS();
+  const D = TABLERO, t = tcARS(), H = 'style="--h:var(--c-mon)"';
   const rows = D.monedas.filter((m) => !m.oculta && m.id !== "USD").map((m) => {
     const u = m.usd_por_unidad, ars = u && t ? u * t : null;
-    return `<tr><td><b>${m.id}</b> <span class="mut">${m.nombre}</span></td><td>${m.error ? "—" : fmt(u, 4)}</td><td>${u ? fmt(1 / u, 4) : "—"}</td><td>${m.id === "ARS" ? "—" : "$ " + fmt(ars)}</td><td>${fpct(m.var_pct)}</td><td>${spark(m.serie)}</td></tr>`;
+    return `<tr><td><b>${m.id}</b> <span class="mut">${m.nombre}</span></td><td>${m.error ? "—" : fmt(u, 4)}</td><td>${u ? fmt(1 / u, 4) : "—"}</td><td>${m.id === "ARS" ? "—" : "$ " + fmt(ars)}</td><td>${chip(m.var_pct)}</td><td>${spark(m.serie)}</td></tr>`;
   }).join("");
-  return `<h2>Monedas (referencia: Yahoo Finance)</h2><div class="wrap"><table><thead><tr><th>Moneda</th><th>USD por 1 unidad</th><th>Unidades por 1 USD</th><th>ARS por 1 unidad (${state.tc.toUpperCase()})</th><th>Var. día</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>
-  <h2>Dólar en Argentina</h2><div class="wrap"><table><thead><tr><th>Tipo</th><th>Compra</th><th>Venta</th><th>Var.</th><th>Fuente</th><th>Actualizado</th></tr></thead><tbody>${D.dolar_ar.map((d) => `<tr><td>${d.nombre}</td><td>${d.error ? "—" : d.compra ? fmt(d.compra) : "—"}</td><td>${d.error ? "—" : fmt(d.venta)}</td><td>${fpct(d.variacion)}</td><td class="mut">${d.fuente || ""}</td><td class="mut">${d.fecha || ""}</td></tr>`).join("")}</tbody></table></div>`;
+  return tcBar() + `<h2 ${H}>Monedas</h2><div class="wrap" ${H}><table><thead><tr><th>Moneda</th><th>USD por 1 unidad</th><th>Unidades por 1 USD</th><th>ARS por 1 unidad</th><th>Var. día</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <h2 ${H}>Dólar en Argentina</h2><div class="wrap" ${H}><table><thead><tr><th>Tipo</th><th>Compra</th><th>Venta</th><th>Var.</th><th>Fuente</th><th>Actualizado</th></tr></thead><tbody>${D.dolar_ar.map((d) => `<tr><td><b>${d.nombre}</b></td><td>${d.error ? "—" : fmt(d.compra)}</td><td>${d.error ? "—" : fmt(d.venta)}</td><td>${chip(d.variacion)}</td><td class="mut">${d.fuente || ""}</td><td class="mut">${d.fecha || ""}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function vBonos() {
+  const H = 'style="--h:var(--c-bon)"';
   const rows = TABLERO.bonos.map((b) => b.error ? `<tr><td>${b.id}</td><td colspan="6" class="mut">sin datos</td></tr>` :
-    `<tr><td><b>${b.id}</b></td><td>${fmt(b.precio_ars)}</td><td>${fpct(b.var_ars)}</td><td>${fvol(b.volumen_ars)}</td><td>${fmt(b.precio_usd)}</td><td>${fpct(b.var_usd)}</td><td>${fvol(b.volumen_usd)}</td></tr>`).join("");
-  return `<h2>Bonos soberanos argentinos</h2><div class="wrap"><table><thead><tr><th>Bono</th><th>Precio ARS</th><th>Var.</th><th>Volumen ARS (nominal)</th><th>Precio USD (MEP)</th><th>Var.</th><th>Volumen USD</th></tr></thead><tbody>${rows}</tbody></table></div><div class="sub">Fuente: data912 (BYMA). Precio por cada 100 de valor nominal. Para sumar bonos, editar config.json → bonos.lista.</div>`;
+    `<tr><td><b>${b.id}</b></td><td>${fmt(b.precio_ars)}</td><td>${chip(b.var_ars)}</td><td>${fvol(b.volumen_ars)}</td><td>${fmt(b.precio_usd)}</td><td>${chip(b.var_usd)}</td><td>${fvol(b.volumen_usd)}</td></tr>`).join("");
+  return `<h2 ${H}>Bonos soberanos argentinos</h2><div class="wrap" ${H}><table><thead><tr><th>Bono</th><th>Precio ARS</th><th>Var.</th><th>Volumen ARS</th><th>Precio USD (MEP)</th><th>Var.</th><th>Volumen USD</th></tr></thead><tbody>${rows}</tbody></table></div><div class="note">Fuente: data912 (BYMA). Precio por cada 100 de valor nominal.</div>`;
 }
-function vSimple(lista, titulo) {
+function vSimple(lista, titulo, tab) {
+  const H = `style="--h:${color(tab)}"`;
   const rows = lista.map((c) => c.error ? `<tr><td>${c.nombre}</td><td colspan="6" class="mut">sin datos</td></tr>` :
-    `<tr><td><b>${c.nombre}</b> ${c.unidad ? `<span class="mut">${c.unidad}</span>` : ""}</td><td>${fmt(c.precio)}</td><td>${fpct(c.var_pct)}</td><td>${fmt(c.previo)}</td><td>${fmt(c.max52)}</td><td>${fmt(c.min52)}</td><td>${spark(c.serie)}</td></tr>`).join("");
-  return `<h2>${titulo}</h2><div class="wrap"><table><thead><tr><th>Componente</th><th>Último</th><th>Var. día</th><th>Cierre prev.</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    `<tr><td><b>${c.nombre}</b>${c.unidad ? `<span class="tk">${c.unidad}</span>` : ""}</td><td><b>${fmt(c.precio)}</b></td><td>${chip(c.var_pct)}</td><td>${fmt(c.previo)}</td><td>${fmt(c.max52)}</td><td>${fmt(c.min52)}</td><td>${spark(c.serie)}</td></tr>`).join("");
+  return `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Componente</th><th>Último</th><th>Var. día</th><th>Cierre prev.</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
-function vAcciones(lista, titulo, grp) {
+function vAcciones(lista, titulo, grp, tab) {
+  const H = `style="--h:${color(tab)}"`;
   const rows = lista.map((a) => {
     const ok = a.cotizaciones.filter((q) => !q.error);
-    if (!ok.length) return `<tr><td><b>${a.nombre}</b></td><td colspan="8" class="mut">${a.nota || "sin datos"}</td></tr>`;
+    if (!ok.length) return `<tr><td><b>${a.nombre}</b></td><td colspan="8" class="mut" style="text-align:left">${a.nota || "sin datos"}</td></tr>`;
     const k = grp + a.id;
     const ver = ok.find((q) => q.mercado === state.ver[k]) || ok[0];
     const en = state.en[k] || "orig";
     const dest = en === "orig" ? ver.moneda : en;
     const c = (v) => convertir(v, ver.moneda, dest);
-    const sel = `<select data-k="${k}" data-t="ver">${ok.map((q) => `<option ${q === ver ? "selected" : ""}>${q.mercado}</option>`).join("")}</select>`;
-    const opts = [["orig", "Original (" + ver.moneda + ")"], ["USD", "USD"], ["ARS", "ARS"]];
-    const sel2 = `<select data-k="${k}" data-t="en">${opts.map(([v, l]) => `<option value="${v}" ${v === en ? "selected" : ""}>${l}</option>`).join("")}</select>`;
-    const conv = en !== "orig" && dest !== ver.moneda;
-    return `<tr><td><b>${a.nombre}</b> <span class="mut">${ver.simbolo}</span></td><td>${sel}</td><td>${sel2}</td><td>${fmt(c(ver.precio))} <span class="mut">${dest}${conv ? "*" : ""}</span></td><td>${fpct(ver.var_pct)}</td><td>${fvol(ver.volumen)} <span class="mut">${ver.mercado.startsWith("BYMA") ? "acc." : "acc."}</span></td><td>${fmt(c(ver.max52))}</td><td>${fmt(c(ver.min52))}</td><td>${spark(ver.serie)}</td></tr>`;
+    const mk = seg(ok.map((q) => [q.mercado, q.mercado]), ver.mercado, `data-act="ver" data-k="${k}"`);
+    const mo = seg([["orig", ver.moneda], ...[["USD", "USD"], ["ARS", "ARS"]].filter(([v]) => v !== ver.moneda)], en, `data-act="en" data-k="${k}"`);
+    const conv = dest !== ver.moneda;
+    return `<tr><td><b>${a.nombre}</b><span class="tk">${ver.simbolo}</span></td><td style="text-align:left">${mk}</td><td style="text-align:left">${mo}</td><td><b>${fmt(c(ver.precio))}</b> <span class="mut">${dest}${conv ? "*" : ""}</span></td><td>${chip(ver.var_pct)}</td><td>${fvol(ver.volumen)}</td><td>${fmt(c(ver.max52))}</td><td>${fmt(c(ver.min52))}</td><td>${spark(ver.serie)}</td></tr>`;
   }).join("");
-  return `<h2>${titulo}</h2><div class="wrap"><table><thead><tr><th>Empresa</th><th>Mercado</th><th>Ver en</th><th>Último</th><th>Var. día</th><th>Volumen negociado</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>
-  <div class="sub">* Convertido con el tipo de cambio elegido arriba (${state.tc.toUpperCase()} para ARS) y los cruces de Yahoo Finance. Volumen = acciones negociadas en el mercado seleccionado, en su sesión actual o la última disponible.</div>`;
+  return tcBar() + `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Empresa</th><th>Mercado</th><th>Ver en</th><th>Último</th><th>Var. día</th><th>Volumen (acciones)</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="note">* Convertido con el tipo de cambio elegido arriba y los cruces de Yahoo Finance. El volumen corresponde al mercado seleccionado, en su sesión actual o la última disponible.</div>`;
 }
 function vFuentes() {
-  return `<h2>Fuentes</h2><div class="wrap"><table><thead><tr><th>Fuente</th><th>Estado</th><th>Acceso</th><th>Nota</th></tr></thead><tbody>${Object.entries(TABLERO.fuentes).map(([k, f]) => `<tr><td><b>${k}</b></td><td class="${f.habilitada ? "up" : "mut"}">${f.habilitada ? "Activa" : "No activa"}</td><td style="white-space:normal">${f.tipo}</td><td style="white-space:normal;text-align:left">${f.nota}</td></tr>`).join("")}</tbody></table></div>
-  ${TABLERO.errores.length ? `<h2>Errores de la última corrida</h2><ul>${TABLERO.errores.map((e) => `<li>${e}</li>`).join("")}</ul>` : ""}`;
+  const H = 'style="--h:var(--c-fue)"';
+  return `<h2 ${H}>Fuentes de datos</h2><div class="wrap" ${H}><table><thead><tr><th>Fuente</th><th>Estado</th><th>Acceso</th><th>Nota</th></tr></thead><tbody>${Object.entries(TABLERO.fuentes).map(([k, f]) => `<tr><td><b>${k}</b></td><td class="${f.habilitada ? "ok" : "off"}">${f.habilitada ? "● Activa" : "○ No activa"}</td><td style="white-space:normal;text-align:left">${f.tipo}</td><td style="white-space:normal;text-align:left">${f.nota}</td></tr>`).join("")}</tbody></table></div>
+  ${TABLERO.errores.length ? `<h2 ${H}>Errores de la última corrida</h2><ul>${TABLERO.errores.map((e) => `<li>${e}</li>`).join("")}</ul>` : ""}`;
 }
-
+function ticker() {
+  const D = TABLERO, it = [];
+  D.dolar_ar.filter((d) => !d.error).forEach((d) => it.push([d.nombre.replace("Dolar ", "USD "), "$ " + fmt(d.venta, 2), d.variacion]));
+  D.indices.filter((i) => !i.error).forEach((i) => it.push([i.id, fmt(i.precio), i.var_pct]));
+  D.commodities.filter((i) => !i.error).forEach((i) => it.push([i.id, fmt(i.precio), i.var_pct]));
+  const h = it.map(([n, v, p]) => `<span class="ti"><b>${n}</b>${v} <span class="${p == null ? "" : p >= 0 ? "u" : "d"}">${p == null ? "" : (p >= 0 ? "▲ " : "▼ ") + nf(2).format(Math.abs(p)) + "%"}</span></span>`).join("");
+  $("#ticker").innerHTML = `<div class="rail">${h}${h}</div>`;
+}
 function render() {
-  const D = window.TABLERO; if (!D) { $("#gen").textContent = "Sin datos: corré collector.mjs"; return; }
-  const g = new Date(D.generado);
-  $("#gen").textContent = "Última actualización: " + g.toLocaleString("es-AR");
-  const w = $("#warn"); w.hidden = !D.errores.length; w.textContent = D.errores.length ? `${D.errores.length} componente(s) sin datos en la última corrida. Ver pestaña Fuentes.` : "";
-  $("#tc").innerHTML = D.dolar_ar.filter((d) => !d.error).map((d) => `<option value="${d.id}" ${d.id === state.tc ? "selected" : ""}>${d.nombre}</option>`).join("");
-  $("#nav").innerHTML = TABS.map(([k, l]) => `<button class="${k === state.tab ? "on" : ""}" data-tab="${k}">${l}</button>`).join("");
-  const v = { resumen: vResumen, monedas: vMonedas, bonos: vBonos, commodities: () => vSimple(D.commodities, "Commodities (USD)"), indices: () => vSimple(D.indices, "Índices bursátiles"), acc_ar: () => vAcciones(D.acciones_argentinas, "Acciones de empresas argentinas", "a"), acc_ex: () => vAcciones(D.acciones_extranjeras, "Acciones de empresas extranjeras", "e"), fuentes: vFuentes }[state.tab];
-  $("#main").innerHTML = v();
-  $("#foot").textContent = "Datos con fines informativos, pueden tener demora. No constituyen asesoramiento financiero.";
+  const D = window.TABLERO; if (!D) { $("#gen").textContent = "Sin datos: ejecutar collector.mjs"; return; }
+  $("#gen").textContent = "Última actualización: " + new Date(D.generado).toLocaleString("es-AR", { hour12: false });
+  $("#nav").innerHTML = TABS.map(([k, l, c]) => `<button style="--c:var(${c})" class="${k === state.tab ? "on" : ""}" data-tab="${k}">${l}</button>`).join("");
+  ticker();
+  const v = { resumen: vResumen, monedas: vMonedas, bonos: vBonos, commodities: () => vSimple(D.commodities, "Commodities (USD)", "commodities"), indices: () => vSimple(D.indices, "Índices bursátiles", "indices"), acc_ar: () => vAcciones(D.acciones_argentinas, "Acciones de empresas argentinas", "a", "acc_ar"), acc_ex: () => vAcciones(D.acciones_extranjeras, "Acciones de empresas extranjeras", "e", "acc_ex"), fuentes: vFuentes }[state.tab];
+  $("#main").innerHTML = (D.errores.length && state.tab !== "fuentes" ? `<div class="warn">⚠️ ${D.errores.length} componente(s) sin datos en la última corrida. Ver pestaña Fuentes.</div>` : "") + v();
 }
-document.addEventListener("click", (e) => { const t = e.target.dataset?.tab; if (t) { state.tab = t; save(); render(); } });
-document.addEventListener("change", (e) => {
-  const el = e.target;
-  if (el.id === "tc") state.tc = el.value;
-  else if (el.dataset.t === "ver") state.ver[el.dataset.k] = el.value;
-  else if (el.dataset.t === "en") state.en[el.dataset.k] = el.value;
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.tab) state.tab = b.dataset.tab;
+  else if (b.dataset.act === "tc") state.tc = b.dataset.v;
+  else if (b.dataset.act === "ver") state.ver[b.dataset.k] = b.dataset.v;
+  else if (b.dataset.act === "en") state.en[b.dataset.k] = b.dataset.v;
+  else return;
   save(); render();
 });
-function recargar() { const s = document.createElement("script"); s.src = "data/latest.js?" + Date.now(); s.onload = () => { render(); s.remove(); }; document.head.appendChild(s); }
+let resta = 300;
+function recargar() {
+  const btn = $("#reload"); btn.classList.add("spin");
+  const s = document.createElement("script"); s.src = "data/latest.js?" + Date.now();
+  s.onload = () => { render(); s.remove(); btn.classList.remove("spin"); resta = 300; };
+  s.onerror = () => { btn.classList.remove("spin"); s.remove(); };
+  document.head.appendChild(s);
+}
 $("#reload").onclick = recargar;
-setInterval(recargar, 5 * 60 * 1000);
+setInterval(() => { resta--; if (resta <= 0) recargar(); $("#cd").textContent = "Se actualiza en " + Math.floor(resta / 60) + ":" + String(resta % 60).padStart(2, "0"); }, 1000);
 render();
 </script>
 </body>

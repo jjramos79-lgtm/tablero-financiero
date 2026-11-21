@@ -34,6 +34,7 @@ jobs:
         run: |
           mkdir -p site/data
           cp index.html site/
+          cp -r assets site/assets
           cp data/latest.js data/latest.json site/data/
       - uses: actions/upload-pages-artifact@v3
         with:
