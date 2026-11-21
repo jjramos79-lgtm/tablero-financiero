@@ -1,0 +1,415 @@
+{
+  "_ayuda": "Para agregar un componente, sumá un objeto a la lista de su categoría y volvé a correr el recolector. No hace falta tocar código.",
+  "fuentes": {
+    "yahoo": {
+      "habilitada": true,
+      "tipo": "API JSON publica (query1.finance.yahoo.com)",
+      "nota": "Fuente principal: acciones, indices, monedas, commodities, volumen."
+    },
+    "ambito": {
+      "habilitada": true,
+      "tipo": "Endpoints JSON publicos (mercados.ambito.com)",
+      "nota": "Dolar oficial, blue, MEP, CCL, mayorista, tarjeta."
+    },
+    "data912": {
+      "habilitada": true,
+      "tipo": "API comunitaria (data912.com)",
+      "nota": "Bonos soberanos argentinos en vivo (BYMA). No es una de las fuentes pedidas; reemplaza al scraping de Ambito/Cronista/Infobae para bonos."
+    },
+    "investing": {
+      "habilitada": false,
+      "tipo": "Sin API publica",
+      "nota": "Requiere scraping (viola sus terminos) o licencia. Adaptador reservado."
+    },
+    "bloomberg": {
+      "habilitada": false,
+      "tipo": "Licencia Bloomberg (BLPAPI / Terminal)",
+      "nota": "Requiere contrato. Adaptador reservado."
+    },
+    "infobae": {
+      "habilitada": false,
+      "tipo": "Sin API publica (Infobae Profesional)",
+      "nota": "Adaptador reservado."
+    },
+    "cronista": {
+      "habilitada": false,
+      "tipo": "Sin API publica (El Cronista Comercial)",
+      "nota": "Adaptador reservado."
+    }
+  },
+  "frecuencias": {
+    "_ayuda": "Minutos entre recargas segun categoria. Se usan en el programador (programar_tarea.ps1).",
+    "acciones_indices_commodities_monedas_bonos": 15,
+    "horario": "Lunes a viernes, 09:00 a 20:00 (hora Argentina)"
+  },
+  "monedas": [
+    {
+      "id": "USD",
+      "nombre": "Dolar estadounidense",
+      "yahoo": null
+    },
+    {
+      "id": "EUR",
+      "nombre": "Euro",
+      "yahoo": "EURUSD=X",
+      "invertir": false
+    },
+    {
+      "id": "BRL",
+      "nombre": "Real brasileno",
+      "yahoo": "USDBRL=X",
+      "invertir": true
+    },
+    {
+      "id": "CLP",
+      "nombre": "Peso chileno",
+      "yahoo": "USDCLP=X",
+      "invertir": true
+    },
+    {
+      "id": "UYU",
+      "nombre": "Peso uruguayo",
+      "yahoo": "USDUYU=X",
+      "invertir": true
+    },
+    {
+      "id": "COP",
+      "nombre": "Peso colombiano",
+      "yahoo": "USDCOP=X",
+      "invertir": true
+    },
+    {
+      "id": "JPY",
+      "nombre": "Yen",
+      "yahoo": "USDJPY=X",
+      "invertir": true
+    },
+    {
+      "id": "GBP",
+      "nombre": "Libra esterlina",
+      "yahoo": "GBPUSD=X",
+      "invertir": false
+    },
+    {
+      "id": "ARS",
+      "nombre": "Peso argentino (oficial)",
+      "yahoo": "USDARS=X",
+      "invertir": true
+    }
+  ],
+  "dolar_ar": [
+    {
+      "id": "oficial",
+      "nombre": "Dolar Oficial (BNA)",
+      "ambito": "oficial"
+    },
+    {
+      "id": "blue",
+      "nombre": "Dolar Blue",
+      "ambito": "informal"
+    },
+    {
+      "id": "mayorista",
+      "nombre": "Dolar Mayorista",
+      "ambito": "mayorista"
+    },
+    {
+      "id": "mep",
+      "nombre": "Dolar MEP (implicito AL30/AL30D)",
+      "bono": "AL30",
+      "serie": "D"
+    },
+    {
+      "id": "ccl",
+      "nombre": "Dolar CCL (implicito AL30/AL30C)",
+      "bono": "AL30",
+      "serie": "C"
+    },
+    {
+      "id": "tarjeta",
+      "nombre": "Dolar Tarjeta (calculado: oficial + recargo)",
+      "desde": "oficial",
+      "recargo_pct": 30
+    }
+  ],
+  "bonos": {
+    "_ayuda": "Simbolos tal como los publica BYMA. Se muestra el precio en pesos y, si existe la serie 'D', en dolares MEP.",
+    "lista": [
+      "AL29",
+      "AL30",
+      "AL35",
+      "AE38",
+      "AL41",
+      "GD29",
+      "GD30",
+      "GD35",
+      "GD38",
+      "GD41",
+      "GD46"
+    ]
+  },
+  "commodities": [
+    {
+      "id": "BRENT",
+      "nombre": "Petroleo Brent",
+      "yahoo": "BZ=F",
+      "unidad": "USD/barril"
+    },
+    {
+      "id": "WTI",
+      "nombre": "Petroleo WTI",
+      "yahoo": "CL=F",
+      "unidad": "USD/barril"
+    },
+    {
+      "id": "ORO",
+      "nombre": "Oro",
+      "yahoo": "GC=F",
+      "unidad": "USD/onza troy"
+    },
+    {
+      "id": "PLATA",
+      "nombre": "Plata",
+      "yahoo": "SI=F",
+      "unidad": "USD/onza troy"
+    },
+    {
+      "id": "SOJA",
+      "nombre": "Soja",
+      "yahoo": "ZS=F",
+      "unidad": "USD/bushel",
+      "divisor": 100
+    },
+    {
+      "id": "TRIGO",
+      "nombre": "Trigo",
+      "yahoo": "ZW=F",
+      "unidad": "USD/bushel",
+      "divisor": 100
+    }
+  ],
+  "indices": [
+    {
+      "id": "DJI",
+      "nombre": "Dow Jones",
+      "yahoo": "^DJI"
+    },
+    {
+      "id": "IXIC",
+      "nombre": "NASDAQ Composite",
+      "yahoo": "^IXIC"
+    },
+    {
+      "id": "MERV",
+      "nombre": "BYMA (S&P Merval)",
+      "yahoo": "^MERV"
+    },
+    {
+      "id": "BVSP",
+      "nombre": "BOVESPA",
+      "yahoo": "^BVSP"
+    },
+    {
+      "id": "N225",
+      "nombre": "NIKKEI 225",
+      "yahoo": "^N225"
+    },
+    {
+      "id": "GDAXI",
+      "nombre": "DAX (Frankfurt)",
+      "yahoo": "^GDAXI"
+    },
+    {
+      "id": "FTSE",
+      "nombre": "FTSE 100 (Londres)",
+      "yahoo": "^FTSE"
+    }
+  ],
+  "acciones_argentinas": [
+    {
+      "id": "YPF",
+      "nombre": "YPF",
+      "cotizaciones": [
+        {
+          "mercado": "NYSE",
+          "moneda": "USD",
+          "yahoo": "YPF"
+        },
+        {
+          "mercado": "BYMA",
+          "moneda": "ARS",
+          "yahoo": "YPFD.BA"
+        }
+      ]
+    },
+    {
+      "id": "GCLA",
+      "nombre": "Grupo Clarin",
+      "cotizaciones": [
+        {
+          "mercado": "BYMA",
+          "moneda": "ARS",
+          "yahoo": "GCLA.BA"
+        }
+      ]
+    },
+    {
+      "id": "CEPU",
+      "nombre": "Central Puerto",
+      "cotizaciones": [
+        {
+          "mercado": "NYSE",
+          "moneda": "USD",
+          "yahoo": "CEPU"
+        },
+        {
+          "mercado": "BYMA",
+          "moneda": "ARS",
+          "yahoo": "CEPU.BA"
+        }
+      ]
+    },
+    {
+      "id": "PAMP",
+      "nombre": "Pampa Energia",
+      "cotizaciones": [
+        {
+          "mercado": "NYSE",
+          "moneda": "USD",
+          "yahoo": "PAM"
+        },
+        {
+          "mercado": "BYMA",
+          "moneda": "ARS",
+          "yahoo": "PAMP.BA"
+        }
+      ]
+    },
+    {
+      "id": "TECO",
+      "nombre": "Personal (Telecom Argentina)",
+      "cotizaciones": [
+        {
+          "mercado": "NYSE",
+          "moneda": "USD",
+          "yahoo": "TEO"
+        },
+        {
+          "mercado": "BYMA",
+          "moneda": "ARS",
+          "yahoo": "TECO2.BA"
+        }
+      ]
+    },
+    {
+      "id": "MELI",
+      "nombre": "Mercado Libre",
+      "cotizaciones": [
+        {
+          "mercado": "NASDAQ",
+          "moneda": "USD",
+          "yahoo": "MELI"
+        },
+        {
+          "mercado": "BYMA (CEDEAR)",
+          "moneda": "ARS",
+          "yahoo": "MELI.BA"
+        }
+      ]
+    }
+  ],
+  "acciones_extranjeras": [
+    {
+      "id": "TSLA",
+      "nombre": "Tesla",
+      "cotizaciones": [
+        {
+          "mercado": "NASDAQ",
+          "moneda": "USD",
+          "yahoo": "TSLA"
+        },
+        {
+          "mercado": "BYMA (CEDEAR)",
+          "moneda": "ARS",
+          "yahoo": "TSLA.BA"
+        }
+      ]
+    },
+    {
+      "id": "ANTHROPIC",
+      "nombre": "Anthropic",
+      "nota": "No cotiza en bolsa (empresa privada). Cuando tenga ticker, agregarlo en 'cotizaciones'.",
+      "cotizaciones": []
+    },
+    {
+      "id": "CVX",
+      "nombre": "Chevron",
+      "cotizaciones": [
+        {
+          "mercado": "NYSE",
+          "moneda": "USD",
+          "yahoo": "CVX"
+        },
+        {
+          "mercado": "BYMA (CEDEAR)",
+          "moneda": "ARS",
+          "yahoo": "CVX.BA"
+        }
+      ]
+    },
+    {
+      "id": "KO",
+      "nombre": "Coca-Cola",
+      "cotizaciones": [
+        {
+          "mercado": "NYSE",
+          "moneda": "USD",
+          "yahoo": "KO"
+        },
+        {
+          "mercado": "BYMA (CEDEAR)",
+          "moneda": "ARS",
+          "yahoo": "KO.BA"
+        }
+      ]
+    },
+    {
+      "id": "SHEL",
+      "nombre": "Shell",
+      "cotizaciones": [
+        {
+          "mercado": "NYSE (ADR)",
+          "moneda": "USD",
+          "yahoo": "SHEL"
+        },
+        {
+          "mercado": "Londres",
+          "moneda": "GBP",
+          "yahoo": "SHEL.L",
+          "divisor": 100
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "nombre": "Barrick Mining (ex Barrick Gold)",
+      "cotizaciones": [
+        {
+          "mercado": "NYSE",
+          "moneda": "USD",
+          "yahoo": "B"
+        },
+        {
+          "mercado": "Toronto",
+          "moneda": "CAD",
+          "yahoo": "ABX.TO"
+        },
+        {
+          "mercado": "BYMA (CEDEAR)",
+          "moneda": "ARS",
+          "yahoo": "B.BA"
+        }
+      ]
+    }
+  ]
+}

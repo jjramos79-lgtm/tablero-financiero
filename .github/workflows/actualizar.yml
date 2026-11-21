@@ -1,0 +1,42 @@
+name: Actualizar y publicar tablero
+
+on:
+  schedule:
+    - cron: "*/15 12-23 * * 1-5"   # cada 15 min, lun-vie 09-20 hora Argentina (UTC-3)
+    - cron: "0 3 * * 2-6"          # cierre del dia
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Recolectar datos
+        run: node collector.mjs
+      - name: Armar sitio
+        run: |
+          mkdir -p site/data
+          cp index.html site/
+          cp data/latest.js data/latest.json site/data/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
