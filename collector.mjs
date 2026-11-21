@@ -129,16 +129,27 @@ await Promise.all(cfg.dolar_ar.map(async (d) => {
 salida.dolar_ar = cfg.dolar_ar.map((d) => dolares.find((x) => x.id === d.id));
 
 const MESES = "FGHJKMNQUVXZ", NOMBRES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-function contratoFrontal(f) {
-  const hoy = new Date(); const d = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + f.meses_adelante, 1));
+function contratoFrontal(f, extra = 0) {
+  const hoy = new Date();
+  let d = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + f.meses_adelante, 1));
+  if (f.vence_dias_habiles_antes_1ro) {
+    // Aproxima el vencimiento: N dias habiles (lun-vie, sin feriados) antes del 1ro del mes de entrega.
+    const venc = new Date(d); let n = 0;
+    while (n < f.vence_dias_habiles_antes_1ro) { venc.setUTCDate(venc.getUTCDate() - 1); if (![0, 6].includes(venc.getUTCDay())) n++; }
+    if (hoy.getTime() > venc.getTime() + 86400000) d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
+  }
+  d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + extra, 1));
   return { simbolo: `${f.raiz}${MESES[d.getUTCMonth()]}${String(d.getUTCFullYear()).slice(2)}${f.sufijo}`, etiqueta: `${NOMBRES[d.getUTCMonth()]}-${String(d.getUTCFullYear()).slice(2)}` };
 }
 salida.commodities = await pool(cfg.commodities, async (c) => {
   let y = null, contrato = null;
   if (c.frontal) {
-    const f = contratoFrontal(c.frontal);
-    y = await safe(`Commodity ${c.id} ${f.simbolo}`, () => yahoo(f.simbolo));
-    if (y) contrato = f.etiqueta;
+    for (const extra of [0, 1]) {
+      const f = contratoFrontal(c.frontal, extra);
+      const r = await safe(`Commodity ${c.id} ${f.simbolo}`, () => yahoo(f.simbolo));
+      // Un contrato vencido deja de actualizarse: si su ultimo dato tiene mas de 5 dias, se usa el siguiente.
+      if (r && Date.now() / 1000 - r.hora < 5 * 86400) { y = r; contrato = f.etiqueta; break; }
+    }
   }
   if (!y) y = await safe(`Commodity ${c.id}`, () => yahoo(c.yahoo));
   return { id: c.id, nombre: c.nombre, contrato, unidad: c.unidad, fuente: "Yahoo Finance", ...(y ? cotizacion(y, c.divisor || 1) : { error: true }) };

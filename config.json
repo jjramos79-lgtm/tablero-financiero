@@ -183,6 +183,19 @@
       "unidad": "USD/barril"
     },
     {
+      "id": "GAS",
+      "nombre": "Gas natural (Henry Hub)",
+      "yahoo": "NG=F",
+      "unidad": "USD/MMBtu",
+      "frontal": {
+        "raiz": "NG",
+        "sufijo": ".NYM",
+        "meses_adelante": 1,
+        "vence_dias_habiles_antes_1ro": 3,
+        "_ayuda": "Vence 3 dias habiles antes del 1ro del mes de entrega. Si el contrato deja de actualizarse, pasa al siguiente."
+      }
+    },
+    {
       "id": "ORO",
       "nombre": "Oro",
       "yahoo": "GC=F",
