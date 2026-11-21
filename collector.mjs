@@ -92,11 +92,11 @@ const salida = { generado: new Date().toISOString(), errores };
 // Monedas: USD por 1 unidad
 const fxExtra = [{ id: "CAD", nombre: "Dolar canadiense", yahoo: "USDCAD=X", invertir: true, oculta: true }];
 salida.monedas = (await pool([...cfg.monedas, ...fxExtra], async (m) => {
-  if (!m.yahoo) return { id: m.id, nombre: m.nombre, usd_por_unidad: 1, var_pct: 0, serie: [] };
+  if (!m.yahoo) return { id: m.id, nombre: m.nombre, fuente: "Referencia (base)", usd_por_unidad: 1, var_pct: 0, serie: [] };
   const y = await safe(`Moneda ${m.id}`, () => yahoo(m.yahoo));
   if (!y) return { id: m.id, nombre: m.nombre, usd_por_unidad: null, error: true };
   const cv = (v) => (v == null ? null : m.invertir ? 1 / v : v);
-  return { id: m.id, nombre: m.nombre, oculta: !!m.oculta, usd_por_unidad: cv(y.precio), previo: cv(y.previo), var_pct: pct(cv(y.precio), cv(y.previo)), serie: y.serie.map(cv), hora: y.hora };
+  return { id: m.id, nombre: m.nombre, fuente: "Yahoo Finance", oculta: !!m.oculta, usd_por_unidad: cv(y.precio), previo: cv(y.previo), var_pct: pct(cv(y.precio), cv(y.previo)), serie: y.serie.map(cv), hora: y.hora };
 }));
 
 const bonosRaw = await safe("Bonos (data912)", data912);
@@ -183,6 +183,47 @@ salida.bonos = cfg.bonos.lista.map((s) => {
     precio_usd: usd?.c ?? null, var_usd: usd?.pct_change ?? null, volumen_usd: usd?.v ?? null,
   };
 });
+
+
+// ---------- Dolar futuro (Ambito) ----------
+{
+  const a = await safe("Dolar futuro (Ambito)", () => getJSON("https://mercados.ambito.com/dolarfuturo/variacion"));
+  salida.dolar_futuro = a ? { nombre: "Dolar futuro (contrato mas proximo)", fuente: "Ambito", compra: num(a.compra), venta: num(a.venta), variacion: num(String(a.variacion).replace("%", "")), fecha: a.fecha, nota: "Un solo contrato; el vencimiento no lo informa la fuente. Curva completa: requiere API oficial de Matba Rofex." } : { nombre: "Dolar futuro", error: true };
+}
+
+// ---------- Riesgo pais ----------
+{
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const hoy = new Date(), ini = new Date(hoy.getTime() - 45 * 86400000);
+  const MES = { Ene: 1, Feb: 2, Mar: 3, Abr: 4, May: 5, Jun: 6, Jul: 7, Ago: 8, Set: 9, Sep: 9, Oct: 10, Nov: 11, Dic: 12 };
+  async function bcrp(codigo) {
+    const j = await getJSON(`https://estadisticas.bcrp.gob.pe/estadisticas/series/api/${codigo}/json/${iso(ini)}/${iso(hoy)}`);
+    return j.periods.map((p) => { const [d, m, y] = p.name.split("."); return { fecha: `20${y}-${String(MES[m]).padStart(2, "0")}-${d}`, v: parseFloat(p.values[0]) }; }).filter((p) => !isNaN(p.v));
+  }
+  // Argentina en vivo (Ambito, con respaldo ArgentinaDatos)
+  let arg = await safe("Riesgo pais Argentina (Ambito)", async () => {
+    const [u, h] = await Promise.all([getJSON("https://mercados.ambito.com/riesgopais/variacion"), getJSON(`https://mercados.ambito.com/riesgopais/historico-general/${iso(ini)}/${iso(hoy)}`)]);
+    return { valor: num(u.ultimo), variacion: num(String(u.variacion).replace("%", "")), fecha: u.fecha, serie: h.slice(1).map((r) => num(r[1])).reverse(), fuente: "Ambito" };
+  });
+  if (!arg) arg = await safe("Riesgo pais Argentina (ArgentinaDatos)", async () => {
+    const u = await getJSON("https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais/ultimo");
+    return { valor: u.valor, variacion: null, fecha: u.fecha, serie: [], fuente: "ArgentinaDatos (respaldo)" };
+  });
+  const pts = {};
+  const comp = await pool(cfg.riesgo_pais.comparativo, async (p) => {
+    if (!p.bcrp) return { id: p.id, pais: p.pais, sin_datos: true, nota: p.nota };
+    const r = await safe(`Riesgo pais ${p.pais} (BCRP)`, () => bcrp(p.bcrp));
+    if (!r || r.length < 2) return { id: p.id, pais: p.pais, sin_datos: true, nota: "Error de la fuente" };
+    pts[p.id] = r;
+    const u = r[r.length - 1], a = r[r.length - 2];
+    return { id: p.id, pais: p.pais, spread: u.v, previo: a.v, var_pbs: u.v - a.v, var_pct: pct(u.v, a.v), fecha: u.fecha, serie: r.map((x) => x.v), fuente: "BCRP (EMBIG JP Morgan)" };
+  });
+  for (const p of comp) {
+    const base = pts.ARG?.find((x) => x.fecha === p.fecha);
+    if (p.spread != null && base && p.id !== "ARG") { p.dif_arg = base.v - p.spread; p.veces = base.v / p.spread; }
+  }
+  salida.riesgo_pais = { argentina_vivo: arg || { error: true }, comparativo: comp, no_aplica: cfg.riesgo_pais.no_aplica, no_aplica_nota: cfg.riesgo_pais.no_aplica_nota };
+}
 
 salida.fuentes = cfg.fuentes;
 salida.nota_config = "Los componentes se definen en config.json";

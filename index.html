@@ -9,7 +9,7 @@
 :root{
   --navy:#12406b;--blue:#2a6a94;--gray:#707070;--bg:#eef2f7;--card:#fff;--tx:#17212b;--mut:#6b7785;--bd:#dde4ec;
   --up:#0f9d58;--dn:#d93025;--upbg:#e6f6ee;--dnbg:#fdeceb;
-  --c-res:#12406b;--c-mon:#0e9aa7;--c-bon:#7c4dff;--c-com:#f59e0b;--c-ind:#2563eb;--c-ar:#0ea5e9;--c-ex:#e11d74;--c-fue:#64748b;
+  --c-res:#12406b;--c-mon:#0e9aa7;--c-bon:#7c4dff;--c-com:#f59e0b;--c-ind:#2563eb;--c-ar:#0ea5e9;--c-ex:#e11d74;--c-fue:#64748b;--c-rp:#b91c1c;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 "Segoe UI",system-ui,Roboto,sans-serif}
@@ -67,6 +67,11 @@ svg.sp{width:90px;height:26px;vertical-align:middle}
 .note{font-size:12px;color:var(--mut);margin-top:8px}
 .warn{background:#fff7e0;border:1px solid #f5d27a;color:#7a5600;border-radius:10px;padding:8px 12px;margin:10px 0;font-size:13px}
 .ok{color:var(--up);font-weight:700}.off{color:var(--mut)}
+.src{font-size:11px;color:var(--mut);margin-top:6px;border-top:1px dashed var(--bd);padding-top:4px}
+.hero{background:linear-gradient(135deg,#7f1d1d,#b91c1c);color:#fff;border-radius:14px;padding:16px 18px;display:grid;grid-template-columns:minmax(200px,1fr) 2fr;gap:16px;align-items:center;margin:10px 0 4px}
+.hero .big{font-size:44px;font-weight:800;letter-spacing:-1px;line-height:1}.hero .lb{opacity:.85;font-size:13px}.hero .chip{background:rgba(255,255,255,.18);color:#fff}.hero .srcl{font-size:11px;opacity:.8;margin-top:8px}
+.hero svg{width:100%;height:90px}
+@media (max-width:700px){.hero{grid-template-columns:1fr}}
 footer{max-width:1280px;margin:auto;padding:0 16px 28px;color:var(--mut);font-size:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 footer img{height:34px}
 @media (max-width:600px){.top img{height:48px}.title h1{font-size:18px}.card .v{font-size:20px}}
@@ -92,10 +97,10 @@ const nf = (d) => new Intl.NumberFormat("es-AR", { minimumFractionDigits: d, max
 const fmt = (v, d = 2) => (v == null || isNaN(v) ? "—" : nf(Math.abs(v) < 1 ? Math.max(d, 4) : d).format(v));
 const fvol = (v) => (v == null ? "—" : v >= 1e9 ? nf(2).format(v / 1e9) + " B" : v >= 1e6 ? nf(2).format(v / 1e6) + " M" : v >= 1e3 ? nf(1).format(v / 1e3) + " K" : nf(0).format(v));
 const viejo = (c) => c && c.desactualizado ? ` <span class="chip na" title="Sin actualización reciente de la fuente">⚠ dato del ${new Date(c.hora * 1000).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}</span>` : "";
-const chip = (v) => v == null || isNaN(v) ? `<span class="chip na">—</span>` : `<span class="chip ${v >= 0 ? "up" : "dn"}">${v >= 0 ? "▲" : "▼"} ${nf(2).format(Math.abs(v))}%</span>`;
-function spark(s) {
+const chip = (v, inv = false) => v == null || isNaN(v) ? `<span class="chip na">—</span>` : `<span class="chip ${(v >= 0) !== inv ? "up" : "dn"}">${v >= 0 ? "▲" : "▼"} ${nf(2).format(Math.abs(v))}%</span>`;
+function spark(s, inv = false) {
   if (!s || s.length < 2) return "";
-  const mn = Math.min(...s), mx = Math.max(...s), r = mx - mn || 1, up = s[s.length - 1] >= s[0], col = up ? "#0f9d58" : "#d93025";
+  const mn = Math.min(...s), mx = Math.max(...s), r = mx - mn || 1, up = (s[s.length - 1] >= s[0]) !== inv, col = up ? "#0f9d58" : "#d93025";
   const pts = s.map((v, i) => `${(i / (s.length - 1)) * 90},${23 - ((v - mn) / r) * 20}`);
   return `<svg class="sp" viewBox="0 0 90 26"><polygon fill="${col}" fill-opacity=".12" points="0,26 ${pts.join(" ")} 90,26"/><polyline fill="none" stroke="${col}" stroke-width="1.8" stroke-linejoin="round" points="${pts.join(" ")}"/></svg>`;
 }
@@ -103,7 +108,7 @@ const state = { tab: "resumen", tc: "mep", ver: {}, en: {} };
 try { Object.assign(state, JSON.parse(localStorage.getItem("tablero") || "{}")); } catch (e) {}
 const save = () => { try { localStorage.setItem("tablero", JSON.stringify(state)); } catch (e) {} };
 
-const TABS = [["resumen","🏠 Resumen","--c-res"],["monedas","💱 Monedas","--c-mon"],["bonos","🏛️ Bonos AR","--c-bon"],["commodities","🛢️ Commodities","--c-com"],["indices","📈 Índices","--c-ind"],["acc_ar","🇦🇷 Acciones argentinas","--c-ar"],["acc_ex","🌎 Acciones extranjeras","--c-ex"],["fuentes","🔌 Fuentes","--c-fue"]];
+const TABS = [["resumen","🏠 Resumen","--c-res"],["monedas","💱 Monedas","--c-mon"],["bonos","🏛️ Bonos AR","--c-bon"],["commodities","🛢️ Commodities","--c-com"],["indices","📈 Índices","--c-ind"],["acc_ar","🇦🇷 Acciones argentinas","--c-ar"],["acc_ex","🌎 Acciones extranjeras","--c-ex"],["riesgo","🛡️ Riesgo país","--c-rp"],["fuentes","🔌 Fuentes","--c-fue"]];
 const color = (t) => `var(${TABS.find((x) => x[0] === t)[2]})`;
 
 const tcARS = () => { const d = TABLERO.dolar_ar.find((x) => x.id === state.tc); return d && !d.error ? d.venta : null; };
@@ -112,36 +117,37 @@ const convertir = (v, de, a) => { if (v == null || de === a) return v; const u =
 const seg = (items, cur, attr) => `<span class="seg">${items.map(([v, l]) => `<button class="${v === cur ? "on" : ""}" ${attr} data-v="${v}">${l}</button>`).join("")}</span>`;
 const tcBar = () => `<div class="bar"><span class="l">Tipo de cambio para convertir a ARS</span>${seg(TABLERO.dolar_ar.filter((d) => !d.error).map((d) => [d.id, d.nombre.replace("Dolar ", "")]), state.tc, 'data-act="tc"')}</div>`;
 
-const card = (n, v, p, extra = "", k = "--navy") => `<div class="card" style="--k:var(${k})"><div class="n">${n}</div><div class="v">${v}</div><div class="s">${chip(p)}<span>${extra}</span></div></div>`;
-const dolarCard = (d) => d.error ? card(d.nombre, "—", null) : `<div class="card" style="--k:var(--blue)"><div class="n">${d.nombre}</div><div class="v">$ ${fmt(d.venta)}</div><div class="cv">Compra $ ${fmt(d.compra)} · Venta $ ${fmt(d.venta)}</div><div class="s" style="margin-top:4px">${chip(d.variacion)}<span>${d.fecha || ""}</span></div></div>`;
+const card = (n, v, p, extra = "", k = "--navy", src = "", inv = false) => `<div class="card" style="--k:var(${k})"><div class="n">${n}</div><div class="v">${v}</div><div class="s">${chip(p, inv)}<span>${extra}</span></div>${src ? `<div class="src">Fuente: ${src}</div>` : ""}</div>`;
+const dolarCard = (d) => d.error ? card(d.nombre, "—", null) : `<div class="card" style="--k:var(--blue)"><div class="n">${d.nombre}</div><div class="v">$ ${fmt(d.venta)}</div><div class="cv">Compra $ ${fmt(d.compra)} · Venta $ ${fmt(d.venta)}</div><div class="s" style="margin-top:4px">${chip(d.variacion)}<span>${d.fecha || ""}</span></div><div class="src">Fuente: ${d.fuente}</div></div>`;
 
 function vResumen() {
   const D = TABLERO;
   return `<h2 style="--h:var(--c-res)">Dólar en Argentina</h2><div class="grid">${D.dolar_ar.map(dolarCard).join("")}</div>
-  <h2 style="--h:var(--c-ind)">Índices</h2><div class="grid">${D.indices.map((i) => i.error ? card(i.nombre, "—", null) : card(i.nombre, fmt(i.precio), i.var_pct, i.desactualizado ? viejo(i) : spark(i.serie), "--c-ind")).join("")}</div>
-  <h2 style="--h:var(--c-com)">Commodities</h2><div class="grid">${D.commodities.map((c) => c.error ? card(c.nombre, "—", null) : card(c.nombre + (c.contrato ? ` (${c.contrato})` : ""), fmt(c.precio), c.var_pct, c.unidad, "--c-com")).join("")}</div>
-  <h2 style="--h:var(--c-mon)">Monedas (USD por unidad)</h2><div class="grid">${D.monedas.filter((m) => !m.oculta && m.id !== "USD" && m.id !== "ARS").map((m) => card(`${m.id} · ${m.nombre}`, m.error ? "—" : fmt(m.usd_por_unidad, 4), m.var_pct, spark(m.serie), "--c-mon")).join("")}</div>`;
+  ${futuroCard()}${riesgoMini()}
+  <h2 style="--h:var(--c-ind)">Índices</h2><div class="grid">${D.indices.map((i) => i.error ? card(i.nombre, "—", null) : card(i.nombre, fmt(i.precio), i.var_pct, i.desactualizado ? viejo(i) : spark(i.serie), "--c-ind", i.fuente)).join("")}</div>
+  <h2 style="--h:var(--c-com)">Commodities</h2><div class="grid">${D.commodities.map((c) => c.error ? card(c.nombre, "—", null) : card(c.nombre + (c.contrato ? ` (${c.contrato})` : ""), fmt(c.precio), c.var_pct, c.unidad, "--c-com", c.fuente)).join("")}</div>
+  <h2 style="--h:var(--c-mon)">Monedas (USD por unidad)</h2><div class="grid">${D.monedas.filter((m) => !m.oculta && m.id !== "USD" && m.id !== "ARS").map((m) => card(`${m.id} · ${m.nombre}`, m.error ? "—" : fmt(m.usd_por_unidad, 4), m.var_pct, spark(m.serie), "--c-mon", m.fuente)).join("")}</div>`;
 }
 function vMonedas() {
   const D = TABLERO, t = tcARS(), H = 'style="--h:var(--c-mon)"';
   const rows = D.monedas.filter((m) => !m.oculta && m.id !== "USD").map((m) => {
     const u = m.usd_por_unidad, ars = u && t ? u * t : null;
-    return `<tr><td><b>${m.id}</b> <span class="mut">${m.nombre}</span></td><td>${m.error ? "—" : fmt(u, 4)}</td><td>${u ? fmt(1 / u, 4) : "—"}</td><td>${m.id === "ARS" ? "—" : "$ " + fmt(ars)}</td><td>${chip(m.var_pct)}</td><td>${spark(m.serie)}</td></tr>`;
+    return `<tr><td><b>${m.id}</b> <span class="mut">${m.nombre}</span></td><td>${m.error ? "—" : fmt(u, 4)}</td><td>${u ? fmt(1 / u, 4) : "—"}</td><td>${m.id === "ARS" ? "—" : "$ " + fmt(ars)}</td><td>${chip(m.var_pct)}</td><td>${spark(m.serie)}</td><td class="mut">${m.fuente || ""}</td></tr>`;
   }).join("");
-  return tcBar() + `<h2 ${H}>Monedas</h2><div class="wrap" ${H}><table><thead><tr><th>Moneda</th><th>USD por 1 unidad</th><th>Unidades por 1 USD</th><th>ARS por 1 unidad</th><th>Var. día</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>
+  return tcBar() + `<h2 ${H}>Monedas</h2><div class="wrap" ${H}><table><thead><tr><th>Moneda</th><th>USD por 1 unidad</th><th>Unidades por 1 USD</th><th>ARS por 1 unidad</th><th>Var. día</th><th>30 días</th><th>Fuente</th></tr></thead><tbody>${rows}</tbody></table></div>
   <h2 ${H}>Dólar en Argentina</h2><div class="wrap" ${H}><table><thead><tr><th>Tipo</th><th>Compra</th><th>Venta</th><th>Var.</th><th>Fuente</th><th>Actualizado</th></tr></thead><tbody>${D.dolar_ar.map((d) => `<tr><td><b>${d.nombre}</b></td><td>${d.error ? "—" : fmt(d.compra)}</td><td>${d.error ? "—" : fmt(d.venta)}</td><td>${chip(d.variacion)}</td><td class="mut">${d.fuente || ""}</td><td class="mut">${d.fecha || ""}</td></tr>`).join("")}</tbody></table></div>`;
 }
 function vBonos() {
   const H = 'style="--h:var(--c-bon)"';
   const rows = TABLERO.bonos.map((b) => b.error ? `<tr><td>${b.id}</td><td colspan="6" class="mut">sin datos</td></tr>` :
-    `<tr><td><b>${b.id}</b></td><td>${fmt(b.precio_ars)}</td><td>${chip(b.var_ars)}</td><td>${fvol(b.volumen_ars)}</td><td>${fmt(b.precio_usd)}</td><td>${chip(b.var_usd)}</td><td>${fvol(b.volumen_usd)}</td></tr>`).join("");
-  return `<h2 ${H}>Bonos soberanos argentinos</h2><div class="wrap" ${H}><table><thead><tr><th>Bono</th><th>Precio ARS</th><th>Var.</th><th>Volumen ARS</th><th>Precio USD (MEP)</th><th>Var.</th><th>Volumen USD</th></tr></thead><tbody>${rows}</tbody></table></div><div class="note">Fuente: data912 (BYMA). Precio por cada 100 de valor nominal.</div>`;
+    `<tr><td><b>${b.id}</b></td><td>${fmt(b.precio_ars)}</td><td>${chip(b.var_ars)}</td><td>${fvol(b.volumen_ars)}</td><td>${fmt(b.precio_usd)}</td><td>${chip(b.var_usd)}</td><td>${fvol(b.volumen_usd)}</td><td class="mut">${b.fuente}</td></tr>`).join("");
+  return `<h2 ${H}>Bonos soberanos argentinos</h2><div class="wrap" ${H}><table><thead><tr><th>Bono</th><th>Precio ARS</th><th>Var.</th><th>Volumen ARS</th><th>Precio USD (MEP)</th><th>Var.</th><th>Volumen USD</th><th>Fuente</th></tr></thead><tbody>${rows}</tbody></table></div><div class="note">Fuente: data912 (BYMA). Precio por cada 100 de valor nominal.</div>`;
 }
 function vSimple(lista, titulo, tab) {
   const H = `style="--h:${color(tab)}"`;
   const rows = lista.map((c) => c.error ? `<tr><td>${c.nombre}</td><td colspan="6" class="mut">sin datos</td></tr>` :
-    `<tr><td><b>${c.nombre}${c.contrato ? ` (${c.contrato})` : ""}</b>${viejo(c)}${c.unidad ? `<span class="tk">${c.unidad}</span>` : ""}</td><td><b>${fmt(c.precio)}</b></td><td>${chip(c.var_pct)}</td><td>${fmt(c.previo)}</td><td>${fmt(c.max52)}</td><td>${fmt(c.min52)}</td><td>${spark(c.serie)}</td></tr>`).join("");
-  return `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Componente</th><th>Último</th><th>Var. día</th><th>Cierre prev.</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    `<tr><td><b>${c.nombre}${c.contrato ? ` (${c.contrato})` : ""}</b>${viejo(c)}${c.unidad ? `<span class="tk">${c.unidad}</span>` : ""}</td><td><b>${fmt(c.precio)}</b></td><td>${chip(c.var_pct)}</td><td>${fmt(c.previo)}</td><td>${fmt(c.max52)}</td><td>${fmt(c.min52)}</td><td>${spark(c.serie)}</td><td class="mut">${c.fuente}</td></tr>`).join("");
+  return `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Componente</th><th>Último</th><th>Var. día</th><th>Cierre prev.</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th><th>Fuente</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function vAcciones(lista, titulo, grp, tab) {
   const H = `style="--h:${color(tab)}"`;
@@ -156,10 +162,38 @@ function vAcciones(lista, titulo, grp, tab) {
     const mk = seg(ok.map((q) => [q.mercado, q.mercado]), ver.mercado, `data-act="ver" data-k="${k}"`);
     const mo = seg([["orig", ver.moneda], ...[["USD", "USD"], ["ARS", "ARS"]].filter(([v]) => v !== ver.moneda)], en, `data-act="en" data-k="${k}"`);
     const conv = dest !== ver.moneda;
-    return `<tr><td><b>${a.nombre}</b><span class="tk">${ver.simbolo}</span></td><td style="text-align:left">${mk}</td><td style="text-align:left">${mo}</td><td><b>${fmt(c(ver.precio))}</b> <span class="mut">${dest}${conv ? "*" : ""}</span>${viejo(ver)}</td><td>${chip(ver.var_pct)}</td><td>${fvol(ver.volumen)}</td><td>${fmt(c(ver.max52))}</td><td>${fmt(c(ver.min52))}</td><td>${spark(ver.serie)}</td></tr>`;
+    return `<tr><td><b>${a.nombre}</b><span class="tk">${ver.simbolo}</span></td><td style="text-align:left">${mk}</td><td style="text-align:left">${mo}</td><td><b>${fmt(c(ver.precio))}</b> <span class="mut">${dest}${conv ? "*" : ""}</span>${viejo(ver)}</td><td>${chip(ver.var_pct)}</td><td>${fvol(ver.volumen)}</td><td>${fmt(c(ver.max52))}</td><td>${fmt(c(ver.min52))}</td><td>${spark(ver.serie)}</td><td class="mut">${ver.fuente}</td></tr>`;
   }).join("");
-  return tcBar() + `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Empresa</th><th>Mercado</th><th>Ver en</th><th>Último</th><th>Var. día</th><th>Volumen (acciones)</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>
+  return tcBar() + `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Empresa</th><th>Mercado</th><th>Ver en</th><th>Último</th><th>Var. día</th><th>Volumen (acciones)</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th><th>Fuente</th></tr></thead><tbody>${rows}</tbody></table></div>
   <div class="note">* Convertido con el tipo de cambio elegido arriba y los cruces de Yahoo Finance. El volumen corresponde al mercado seleccionado, en su sesión actual o la última disponible.</div>`;
+}
+function futuroCard() {
+  const f = TABLERO.dolar_futuro; if (!f || f.error) return "";
+  return `<h2 style="--h:var(--c-res)">Dólar futuro</h2><div class="grid"><div class="card" style="--k:var(--navy)" title="${f.nota}"><div class="n">${f.nombre}</div><div class="v">$ ${fmt(f.venta)}</div><div class="cv">Compra $ ${fmt(f.compra)} · Venta $ ${fmt(f.venta)}</div><div class="s" style="margin-top:4px">${chip(f.variacion)}<span>${f.fecha}</span></div><div class="src">Fuente: ${f.fuente}</div></div></div>`;
+}
+function riesgoMini() {
+  const r = TABLERO.riesgo_pais; if (!r) return "";
+  const a = r.argentina_vivo, items = [];
+  if (a && !a.error) items.push(card("Argentina (en vivo)", fmt(a.valor, 0) + " pbs", a.variacion, spark(a.serie, true), "--c-rp", a.fuente + " · " + a.fecha, true));
+  r.comparativo.filter((p) => !p.sin_datos && p.id !== "ARG").forEach((p) => items.push(card(p.pais, fmt(p.spread, 0) + " pbs", p.var_pct, "al " + p.fecha.slice(8) + "/" + p.fecha.slice(5, 7), "--c-rp", p.fuente, true)));
+  return `<h2 style="--h:var(--c-rp)">Riesgo país (EMBIG, puntos básicos)</h2><div class="grid">${items.join("")}</div>`;
+}
+function bigSpark(s) {
+  if (!s || s.length < 2) return "";
+  const mn = Math.min(...s), mx = Math.max(...s), r = mx - mn || 1;
+  const pts = s.map((v, i) => `${(i / (s.length - 1)) * 300},${74 - ((v - mn) / r) * 64}`);
+  return `<svg viewBox="0 0 300 80" preserveAspectRatio="none"><polygon fill="#fff" fill-opacity=".15" points="0,80 ${pts.join(" ")} 300,80"/><polyline fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" points="${pts.join(" ")}"/></svg>`;
+}
+function vRiesgo() {
+  const r = TABLERO.riesgo_pais, H = 'style="--h:var(--c-rp)"';
+  if (!r) return "<p>Sin datos</p>";
+  const a = r.argentina_vivo;
+  const hero = a && !a.error ? `<div class="hero"><div><div class="lb">Riesgo país Argentina · último dato</div><div class="big">${fmt(a.valor, 0)} <span style="font-size:18px;font-weight:600">pbs</span></div><div style="margin-top:8px">${chip(a.variacion)} <span class="lb">${a.fecha}</span></div><div class="srcl">Fuente: ${a.fuente}</div></div><div>${bigSpark(a.serie)}<div class="lb" style="text-align:right">Últimos 30 días</div></div></div>` : `<div class="warn">Sin datos de riesgo país de Argentina.</div>`;
+  const rows = r.comparativo.map((p) => p.sin_datos ? `<tr><td><b>${p.pais}</b></td><td colspan="7" class="mut" style="text-align:left">${p.nota || "sin datos"}</td></tr>` :
+    `<tr ${p.id === "ARG" ? 'style="background:#fdeceb"' : ""}><td><b>${p.pais}</b></td><td><b>${fmt(p.spread, 0)}</b></td><td>${chip(p.var_pct, true)} <span class="mut">${p.var_pbs >= 0 ? "+" : ""}${fmt(p.var_pbs, 0)} pbs</span></td><td>${p.dif_arg == null ? "—" : "+" + fmt(p.dif_arg, 0) + " pbs"}</td><td>${p.veces == null ? "—" : fmt(p.veces, 1) + " veces"}</td><td>${spark(p.serie, true)}</td><td class="mut">${p.fecha.split("-").reverse().join("/")}</td><td class="mut">${p.fuente}</td></tr>`).join("");
+  return hero + `<h2 ${H}>Argentina frente a los países de la región</h2><div class="wrap" ${H}><table><thead><tr><th>País</th><th>Spread EMBIG (pbs)</th><th>Var. día</th><th>Argentina de más</th><th>Argentina ÷ país</th><th>30 días</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div class="note">Todos los países se comparan a la misma fecha (la del último dato del BCRP, con unos 4 días hábiles de demora). El valor en vivo de Argentina de arriba es más reciente. 100 pbs = 1 punto porcentual de sobretasa sobre el bono del Tesoro de EE.UU.</div>
+  <div class="note"><b>Sin indicador:</b> ${r.no_aplica.join(", ")}. ${r.no_aplica_nota}</div>`;
 }
 function vFuentes() {
   const H = 'style="--h:var(--c-fue)"';
@@ -179,7 +213,7 @@ function render() {
   $("#gen").textContent = "Última actualización: " + new Date(D.generado).toLocaleString("es-AR", { hour12: false });
   $("#nav").innerHTML = TABS.map(([k, l, c]) => `<button style="--c:var(${c})" class="${k === state.tab ? "on" : ""}" data-tab="${k}">${l}</button>`).join("");
   ticker();
-  const v = { resumen: vResumen, monedas: vMonedas, bonos: vBonos, commodities: () => vSimple(D.commodities, "Commodities (USD)", "commodities"), indices: () => vSimple(D.indices, "Índices bursátiles", "indices"), acc_ar: () => vAcciones(D.acciones_argentinas, "Acciones de empresas argentinas", "a", "acc_ar"), acc_ex: () => vAcciones(D.acciones_extranjeras, "Acciones de empresas extranjeras", "e", "acc_ex"), fuentes: vFuentes }[state.tab];
+  const v = { resumen: vResumen, monedas: vMonedas, bonos: vBonos, commodities: () => vSimple(D.commodities, "Commodities (USD)", "commodities"), indices: () => vSimple(D.indices, "Índices bursátiles", "indices"), acc_ar: () => vAcciones(D.acciones_argentinas, "Acciones de empresas argentinas", "a", "acc_ar"), acc_ex: () => vAcciones(D.acciones_extranjeras, "Acciones de empresas extranjeras", "e", "acc_ex"), riesgo: vRiesgo, fuentes: vFuentes }[state.tab];
   $("#main").innerHTML = (D.errores.length && state.tab !== "fuentes" ? `<div class="warn">⚠️ ${D.errores.length} componente(s) sin datos en la última corrida. Ver pestaña Fuentes.</div>` : "") + v();
 }
 document.addEventListener("click", (e) => {

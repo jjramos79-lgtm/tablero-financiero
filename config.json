@@ -9,7 +9,7 @@
     "ambito": {
       "habilitada": true,
       "tipo": "Endpoints JSON publicos (mercados.ambito.com)",
-      "nota": "Respaldo del dolar oficial, blue y mayorista si falla DolarApi."
+      "nota": "Riesgo pais de Argentina, dolar futuro y respaldo del dolar oficial, blue y mayorista."
     },
     "data912": {
       "habilitada": true,
@@ -45,6 +45,16 @@
       "habilitada": true,
       "tipo": "API JSON publica (argentinadatos.com)",
       "nota": "Cierre anterior del dolar, para la variacion diaria."
+    },
+    "bcrp": {
+      "habilitada": true,
+      "tipo": "API JSON publica (estadisticas.bcrp.gob.pe)",
+      "nota": "Spread EMBIG (JP Morgan) diario por pais, publicado por el Banco Central de Reserva del Peru. Demora de unos 4 dias habiles."
+    },
+    "matbarofex": {
+      "habilitada": false,
+      "tipo": "API oficial con usuario y token (A3 Mercados / Matba Rofex)",
+      "nota": "Sin endpoint abierto. Se activa con credenciales; mientras tanto el dolar futuro viene de Ambito (un solo contrato)."
     }
   },
   "frecuencias": {
@@ -445,5 +455,48 @@
         }
       ]
     }
-  ]
+  ],
+  "riesgo_pais": {
+    "_ayuda": "EMBIG = spread de bonos soberanos en puntos basicos (100 pbs = 1%). Para sumar un pais con serie en BCRP, agregar un objeto con su codigo.",
+    "comparativo": [
+      {
+        "id": "ARG",
+        "pais": "Argentina",
+        "bcrp": "PD43664XD"
+      },
+      {
+        "id": "BRA",
+        "pais": "Brasil",
+        "bcrp": "PD43665XD"
+      },
+      {
+        "id": "CHL",
+        "pais": "Chile",
+        "bcrp": "PD43671XD"
+      },
+      {
+        "id": "COL",
+        "pais": "Colombia",
+        "bcrp": "PD43669XD"
+      },
+      {
+        "id": "URY",
+        "pais": "Uruguay",
+        "bcrp": null,
+        "nota": "Sin fuente gratuita disponible (no figura en el BCRP)."
+      },
+      {
+        "id": "EME",
+        "pais": "Economias emergentes (referencia)",
+        "bcrp": "PD43670XD"
+      }
+    ],
+    "no_aplica": [
+      "Estados Unidos",
+      "Zona Euro",
+      "Japon",
+      "Reino Unido"
+    ],
+    "no_aplica_nota": "El EMBIG mide mercados emergentes; no existe un riesgo pais equivalente para estas economias."
+  }
 }
