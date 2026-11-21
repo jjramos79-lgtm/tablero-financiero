@@ -118,7 +118,7 @@ function vResumen() {
   const D = TABLERO;
   return `<h2 style="--h:var(--c-res)">Dólar en Argentina</h2><div class="grid">${D.dolar_ar.map(dolarCard).join("")}</div>
   <h2 style="--h:var(--c-ind)">Índices</h2><div class="grid">${D.indices.map((i) => i.error ? card(i.nombre, "—", null) : card(i.nombre, fmt(i.precio), i.var_pct, spark(i.serie), "--c-ind")).join("")}</div>
-  <h2 style="--h:var(--c-com)">Commodities</h2><div class="grid">${D.commodities.map((c) => c.error ? card(c.nombre, "—", null) : card(c.nombre, fmt(c.precio), c.var_pct, c.unidad, "--c-com")).join("")}</div>
+  <h2 style="--h:var(--c-com)">Commodities</h2><div class="grid">${D.commodities.map((c) => c.error ? card(c.nombre, "—", null) : card(c.nombre + (c.contrato ? ` (${c.contrato})` : ""), fmt(c.precio), c.var_pct, c.unidad, "--c-com")).join("")}</div>
   <h2 style="--h:var(--c-mon)">Monedas (USD por unidad)</h2><div class="grid">${D.monedas.filter((m) => !m.oculta && m.id !== "USD" && m.id !== "ARS").map((m) => card(`${m.id} · ${m.nombre}`, m.error ? "—" : fmt(m.usd_por_unidad, 4), m.var_pct, spark(m.serie), "--c-mon")).join("")}</div>`;
 }
 function vMonedas() {
@@ -139,7 +139,7 @@ function vBonos() {
 function vSimple(lista, titulo, tab) {
   const H = `style="--h:${color(tab)}"`;
   const rows = lista.map((c) => c.error ? `<tr><td>${c.nombre}</td><td colspan="6" class="mut">sin datos</td></tr>` :
-    `<tr><td><b>${c.nombre}</b>${c.unidad ? `<span class="tk">${c.unidad}</span>` : ""}</td><td><b>${fmt(c.precio)}</b></td><td>${chip(c.var_pct)}</td><td>${fmt(c.previo)}</td><td>${fmt(c.max52)}</td><td>${fmt(c.min52)}</td><td>${spark(c.serie)}</td></tr>`).join("");
+    `<tr><td><b>${c.nombre}${c.contrato ? ` (${c.contrato})` : ""}</b>${c.unidad ? `<span class="tk">${c.unidad}</span>` : ""}</td><td><b>${fmt(c.precio)}</b></td><td>${chip(c.var_pct)}</td><td>${fmt(c.previo)}</td><td>${fmt(c.max52)}</td><td>${fmt(c.min52)}</td><td>${spark(c.serie)}</td></tr>`).join("");
   return `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Componente</th><th>Último</th><th>Var. día</th><th>Cierre prev.</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function vAcciones(lista, titulo, grp, tab) {

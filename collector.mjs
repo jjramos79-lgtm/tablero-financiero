@@ -128,9 +128,20 @@ await Promise.all(cfg.dolar_ar.map(async (d) => {
 }));
 salida.dolar_ar = cfg.dolar_ar.map((d) => dolares.find((x) => x.id === d.id));
 
+const MESES = "FGHJKMNQUVXZ", NOMBRES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+function contratoFrontal(f) {
+  const hoy = new Date(); const d = new Date(Date.UTC(hoy.getUTCFullYear(), hoy.getUTCMonth() + f.meses_adelante, 1));
+  return { simbolo: `${f.raiz}${MESES[d.getUTCMonth()]}${String(d.getUTCFullYear()).slice(2)}${f.sufijo}`, etiqueta: `${NOMBRES[d.getUTCMonth()]}-${String(d.getUTCFullYear()).slice(2)}` };
+}
 salida.commodities = await pool(cfg.commodities, async (c) => {
-  const y = await safe(`Commodity ${c.id}`, () => yahoo(c.yahoo));
-  return { id: c.id, nombre: c.nombre, unidad: c.unidad, fuente: "Yahoo Finance", ...(y ? cotizacion(y, c.divisor || 1) : { error: true }) };
+  let y = null, contrato = null;
+  if (c.frontal) {
+    const f = contratoFrontal(c.frontal);
+    y = await safe(`Commodity ${c.id} ${f.simbolo}`, () => yahoo(f.simbolo));
+    if (y) contrato = f.etiqueta;
+  }
+  if (!y) y = await safe(`Commodity ${c.id}`, () => yahoo(c.yahoo));
+  return { id: c.id, nombre: c.nombre, contrato, unidad: c.unidad, fuente: "Yahoo Finance", ...(y ? cotizacion(y, c.divisor || 1) : { error: true }) };
 });
 
 salida.indices = await pool(cfg.indices, async (c) => {

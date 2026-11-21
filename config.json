@@ -168,7 +168,13 @@
       "id": "BRENT",
       "nombre": "Petroleo Brent",
       "yahoo": "BZ=F",
-      "unidad": "USD/barril"
+      "unidad": "USD/barril",
+      "frontal": {
+        "raiz": "BZ",
+        "sufijo": ".NYM",
+        "meses_adelante": 2,
+        "_ayuda": "Contrato Brent mas cercano: vence el ultimo dia habil del mes M, entrega M+2. Si falla, usa 'yahoo'."
+      }
     },
     {
       "id": "WTI",
