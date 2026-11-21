@@ -91,6 +91,7 @@ const $ = (s) => document.querySelector(s);
 const nf = (d) => new Intl.NumberFormat("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d });
 const fmt = (v, d = 2) => (v == null || isNaN(v) ? "—" : nf(Math.abs(v) < 1 ? Math.max(d, 4) : d).format(v));
 const fvol = (v) => (v == null ? "—" : v >= 1e9 ? nf(2).format(v / 1e9) + " B" : v >= 1e6 ? nf(2).format(v / 1e6) + " M" : v >= 1e3 ? nf(1).format(v / 1e3) + " K" : nf(0).format(v));
+const viejo = (c) => c && c.desactualizado ? ` <span class="chip na" title="Sin actualización reciente de la fuente">⚠ dato del ${new Date(c.hora * 1000).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}</span>` : "";
 const chip = (v) => v == null || isNaN(v) ? `<span class="chip na">—</span>` : `<span class="chip ${v >= 0 ? "up" : "dn"}">${v >= 0 ? "▲" : "▼"} ${nf(2).format(Math.abs(v))}%</span>`;
 function spark(s) {
   if (!s || s.length < 2) return "";
@@ -117,7 +118,7 @@ const dolarCard = (d) => d.error ? card(d.nombre, "—", null) : `<div class="ca
 function vResumen() {
   const D = TABLERO;
   return `<h2 style="--h:var(--c-res)">Dólar en Argentina</h2><div class="grid">${D.dolar_ar.map(dolarCard).join("")}</div>
-  <h2 style="--h:var(--c-ind)">Índices</h2><div class="grid">${D.indices.map((i) => i.error ? card(i.nombre, "—", null) : card(i.nombre, fmt(i.precio), i.var_pct, spark(i.serie), "--c-ind")).join("")}</div>
+  <h2 style="--h:var(--c-ind)">Índices</h2><div class="grid">${D.indices.map((i) => i.error ? card(i.nombre, "—", null) : card(i.nombre, fmt(i.precio), i.var_pct, i.desactualizado ? viejo(i) : spark(i.serie), "--c-ind")).join("")}</div>
   <h2 style="--h:var(--c-com)">Commodities</h2><div class="grid">${D.commodities.map((c) => c.error ? card(c.nombre, "—", null) : card(c.nombre + (c.contrato ? ` (${c.contrato})` : ""), fmt(c.precio), c.var_pct, c.unidad, "--c-com")).join("")}</div>
   <h2 style="--h:var(--c-mon)">Monedas (USD por unidad)</h2><div class="grid">${D.monedas.filter((m) => !m.oculta && m.id !== "USD" && m.id !== "ARS").map((m) => card(`${m.id} · ${m.nombre}`, m.error ? "—" : fmt(m.usd_por_unidad, 4), m.var_pct, spark(m.serie), "--c-mon")).join("")}</div>`;
 }
@@ -139,7 +140,7 @@ function vBonos() {
 function vSimple(lista, titulo, tab) {
   const H = `style="--h:${color(tab)}"`;
   const rows = lista.map((c) => c.error ? `<tr><td>${c.nombre}</td><td colspan="6" class="mut">sin datos</td></tr>` :
-    `<tr><td><b>${c.nombre}${c.contrato ? ` (${c.contrato})` : ""}</b>${c.unidad ? `<span class="tk">${c.unidad}</span>` : ""}</td><td><b>${fmt(c.precio)}</b></td><td>${chip(c.var_pct)}</td><td>${fmt(c.previo)}</td><td>${fmt(c.max52)}</td><td>${fmt(c.min52)}</td><td>${spark(c.serie)}</td></tr>`).join("");
+    `<tr><td><b>${c.nombre}${c.contrato ? ` (${c.contrato})` : ""}</b>${viejo(c)}${c.unidad ? `<span class="tk">${c.unidad}</span>` : ""}</td><td><b>${fmt(c.precio)}</b></td><td>${chip(c.var_pct)}</td><td>${fmt(c.previo)}</td><td>${fmt(c.max52)}</td><td>${fmt(c.min52)}</td><td>${spark(c.serie)}</td></tr>`).join("");
   return `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Componente</th><th>Último</th><th>Var. día</th><th>Cierre prev.</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function vAcciones(lista, titulo, grp, tab) {
@@ -155,7 +156,7 @@ function vAcciones(lista, titulo, grp, tab) {
     const mk = seg(ok.map((q) => [q.mercado, q.mercado]), ver.mercado, `data-act="ver" data-k="${k}"`);
     const mo = seg([["orig", ver.moneda], ...[["USD", "USD"], ["ARS", "ARS"]].filter(([v]) => v !== ver.moneda)], en, `data-act="en" data-k="${k}"`);
     const conv = dest !== ver.moneda;
-    return `<tr><td><b>${a.nombre}</b><span class="tk">${ver.simbolo}</span></td><td style="text-align:left">${mk}</td><td style="text-align:left">${mo}</td><td><b>${fmt(c(ver.precio))}</b> <span class="mut">${dest}${conv ? "*" : ""}</span></td><td>${chip(ver.var_pct)}</td><td>${fvol(ver.volumen)}</td><td>${fmt(c(ver.max52))}</td><td>${fmt(c(ver.min52))}</td><td>${spark(ver.serie)}</td></tr>`;
+    return `<tr><td><b>${a.nombre}</b><span class="tk">${ver.simbolo}</span></td><td style="text-align:left">${mk}</td><td style="text-align:left">${mo}</td><td><b>${fmt(c(ver.precio))}</b> <span class="mut">${dest}${conv ? "*" : ""}</span>${viejo(ver)}</td><td>${chip(ver.var_pct)}</td><td>${fvol(ver.volumen)}</td><td>${fmt(c(ver.max52))}</td><td>${fmt(c(ver.min52))}</td><td>${spark(ver.serie)}</td></tr>`;
   }).join("");
   return tcBar() + `<h2 ${H}>${titulo}</h2><div class="wrap" ${H}><table><thead><tr><th>Empresa</th><th>Mercado</th><th>Ver en</th><th>Último</th><th>Var. día</th><th>Volumen (acciones)</th><th>Máx 52s</th><th>Mín 52s</th><th>30 días</th></tr></thead><tbody>${rows}</tbody></table></div>
   <div class="note">* Convertido con el tipo de cambio elegido arriba y los cruces de Yahoo Finance. El volumen corresponde al mercado seleccionado, en su sesión actual o la última disponible.</div>`;

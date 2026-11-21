@@ -83,7 +83,7 @@ async function pool(items, fn, n = 6) {
 
 function cotizacion(y, div = 1) {
   const f = (v) => (v == null ? null : v / div);
-  return { precio: f(y.precio), previo: f(y.previo), var_pct: pct(y.precio, y.previo), volumen: y.volumen, max52: f(y.max52), min52: f(y.min52), serie: y.serie.map((v) => v / div), hora: y.hora };
+  return { precio: f(y.precio), previo: f(y.previo), var_pct: pct(y.precio, y.previo), volumen: y.volumen, max52: f(y.max52), min52: f(y.min52), serie: y.serie.map((v) => v / div), hora: y.hora, desactualizado: Date.now() / 1000 - y.hora > 4 * 86400 };
 }
 
 // ---------- Recoleccion ----------
